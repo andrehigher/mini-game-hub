@@ -60,7 +60,7 @@ public class GameSessionController : ControllerBase
         await _dbContext.SaveChangesAsync();
         
         await _hubContext.Clients.Group(request.SessionId.ToString())
-            .SendAsync("PlayerJoined", $"{player.Name} entrou na sessão.");
+            .SendAsync("PlayerJoined", $"{player.Name} entered the session.");
 
         return Ok(new { PlayerId = player.Id });
     }
