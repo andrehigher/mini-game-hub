@@ -482,3 +482,7 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+MiniGameHub.Api/*.db
+MiniGameHub.Api/*.db-shm
+MiniGameHub.Api/*.db-wal
