@@ -1,79 +1,70 @@
 ﻿// MiniGameHub.Api/Pages/Account/Login.cshtml.cs
 
 using Duende.IdentityServer.Test;
-using Duende.IdentityServer.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using System.Threading.Tasks;
 using Duende.IdentityServer.Services; 
 using Duende.IdentityServer.Events;    
-using System.Security.Claims;
-using Duende.IdentityServer; // Necessário para a autenticação baseada em Claims
+using Duende.IdentityServer;
+using Microsoft.AspNetCore.Identity;
 
 
 namespace MiniGameHub.Api.Pages.Account.Login
 {
-    // A classe principal: LoginModel
     public class LoginModel : PageModel
     {
-        private readonly TestUserStore _users;
+        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UserManager<IdentityUser> _userManager;
         private readonly IIdentityServerInteractionService _interaction; 
         private readonly IEventService _events;
 
-        // O construtor com as injeções
         public LoginModel(
-            TestUserStore users, 
+            SignInManager<IdentityUser> signInManager,
+            UserManager<IdentityUser> userManager,
             IIdentityServerInteractionService interaction, 
             IEventService events)                        
         {
-            _users = users;
+            _signInManager = signInManager;
+            _userManager = userManager;
             _interaction = interaction;
             _events = events;
         }
 
         [BindProperty]
         public InputModel Input { get; set; } = new();
-
-        // A classe interna para o modelo do formulário
+        
         public class InputModel
         {
-            // ... (campos: Username, Password, ReturnUrl)
-            public string Username { get; set; } = "";
+            public string Email { get; set; } = "";
             public string Password { get; set; } = "";
             public string ReturnUrl { get; set; } = "/";
-            // ...
         }
 
         public void OnGet(string? returnUrl)
         {
             Input.ReturnUrl = returnUrl ?? "/";
         }
-
-        // O método chamado ao submeter o formulário
+        
         public async Task<IActionResult> OnPost()
         {
-            Console.WriteLine($"Username: {Input.Username}, Password: {Input.Password}");
-            // O conteúdo corrigido do OnPost que eu te passei anteriormente...
             if (ModelState.IsValid)
             {
-                if (_users.ValidateCredentials(Input.Username, Input.Password))
+                var result =  await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, false, false);
+                if (result.Succeeded)
                 {
-                    var user = _users.FindByUsername(Input.Username);
+                    var user = await _userManager.FindByNameAsync(Input.Email);
                     
-                    // Disparar evento de sucesso (boa prática)
-                    await _events.RaiseAsync(new UserLoginSuccessEvent(user.Username, user.SubjectId, user.Username));
+                    await _events.RaiseAsync(new UserLoginSuccessEvent(user.Email, user.Id, user.Email));
 
-                    // Autenticar e criar a sessão (cookie) do IdentityServer
-                    var isuser = new IdentityServerUser(user.SubjectId)
+                    /*var isuser = new IdentityServerUser(user.SubjectId)
                     {
                         DisplayName = user.Username
                     };
                     await HttpContext.SignInAsync(
                         IdentityServerConstants.DefaultCookieAuthenticationScheme,
-                        isuser.CreatePrincipal());
+                        isuser.CreatePrincipal());*/
                     
-                    // O REDIRECIONAMENTO CORRETO para continuar o fluxo OIDC
                     if (_interaction.IsValidReturnUrl(Input.ReturnUrl) || Url.IsLocalUrl(Input.ReturnUrl))
                     {
                         return Redirect(Input.ReturnUrl);
@@ -82,7 +73,7 @@ namespace MiniGameHub.Api.Pages.Account.Login
                     return Redirect("~/");
                 }
 
-                ModelState.AddModelError(string.Empty, "Usuário ou senha inválidos.");
+                ModelState.AddModelError(string.Empty, "Username or password is incorrect.");
             }
 
             return Page();

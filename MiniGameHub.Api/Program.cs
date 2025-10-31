@@ -1,5 +1,4 @@
 using Duende.IdentityServer;
-using Duende.IdentityServer.Test;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MiniGameHub.Api.Configuration;
@@ -33,21 +32,26 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+    {
+        options.User.RequireUniqueEmail = true;
+        options.SignIn.RequireConfirmedAccount = false;
+    })
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
+
 // IdentityServer
 builder.Services.AddIdentityServer(options =>
 {
-    options.KeyManagement.Enabled = false; // evita warning de licença
+    options.KeyManagement.Enabled = false;
 })
+.AddAspNetIdentity<IdentityUser>() 
 .AddInMemoryClients(Config.Clients)
 .AddInMemoryIdentityResources(Config.IdentityResources)
 .AddInMemoryApiScopes(Config.ApiScopes)
-.AddTestUsers(new List<TestUser> {
-    new TestUser { SubjectId = "1", Username = "alice", Password = "alice" },
-    new TestUser { SubjectId = "2", Username = "bob", Password = "bob" }
-})
 .AddDeveloperSigningCredential();
 
-// Autenticação
+
 builder.Services.AddAntiforgery(options =>
 {
     options.Cookie.Name = "X-CSRF-TOKEN-MINIGAME";
