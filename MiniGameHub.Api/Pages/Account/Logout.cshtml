@@ -1,0 +1,12 @@
+﻿@page
+@model MiniGameHub.Api.Pages.Account.LogoutModel
+@{
+    ViewData["Title"] = "Logout";
+}
+
+<h2>Deseja realmente sair?</h2>
+
+<form method="post">
+    <input type="hidden" asp-for="LogoutId" />
+    <button type="submit">Sair</button>
+</form>

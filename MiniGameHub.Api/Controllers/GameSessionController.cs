@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using MiniGameHub.Api.Data;
@@ -7,6 +8,7 @@ using MiniGameHub.Api.Models;
 
 namespace MiniGameHub.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("[controller]")]
 public class GameSessionController : ControllerBase

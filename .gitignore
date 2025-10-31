@@ -486,3 +486,6 @@ $RECYCLE.BIN/
 MiniGameHub.Api/*.db
 MiniGameHub.Api/*.db-shm
 MiniGameHub.Api/*.db-wal
+
+MiniGameHub.Api/keys/
+MiniGameHub.Api/tempkey.jwk
